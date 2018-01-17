@@ -35,12 +35,30 @@ abstract class GroovuinoMLBasescript extends Script {
 				[and: closure]
 			}]
 		}
+
 		[means: closure]
 	}
 	
 	// initial state
 	def initial(state) {
 		((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().setInitialState(state instanceof String ? (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state) : (State)state)
+	}
+
+	def error(Integer code){
+		((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel() setLedError()
+		List<Action> actions = new ArrayList<Action>()
+		Action action = new Action();
+		action.setActuator( (Actuator)((GroovuinoMLBinding)this.getBinding()).getVariable("errorLed"))
+		action.setValue(SIGNAL.HIGH)
+		actions.add(action);
+		//((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createError(code, actions)
+		[when: { sensor ->
+			[becomes: { signal ->
+				((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createError(code, actions,
+						sensor instanceof String ? (Sensor) ((GroovuinoMLBinding) this.getBinding()).getVariable(sensor) : (Sensor) sensor,
+						signal instanceof String ? (SIGNAL) ((GroovuinoMLBinding) this.getBinding()).getVariable(signal) : (SIGNAL) signal)
+			}]
+		}]
 	}
 	
 	// from state1 to state2 when sensor becomes signal

@@ -1,6 +1,7 @@
 package io.github.mosser.arduinoml.kernel.generator;
 
 import io.github.mosser.arduinoml.kernel.behavioral.*;
+import io.github.mosser.arduinoml.kernel.behavioral.Error;
 import io.github.mosser.arduinoml.kernel.structural.*;
 import io.github.mosser.arduinoml.kernel.App;
 
@@ -14,6 +15,7 @@ public abstract class Visitor<T> {
 	public abstract void visit(State state);
 	public abstract void visit(Transition transition);
 	public abstract void visit(Action action);
+	public abstract void visit(Error error);
 
 	public abstract void visit(Actuator actuator);
 	public abstract void visit(Sensor sensor);

@@ -5,6 +5,7 @@ import java.util.*;
 import groovy.lang.Binding;
 import io.github.mosser.arduinoml.kernel.App;
 import io.github.mosser.arduinoml.kernel.behavioral.Action;
+import io.github.mosser.arduinoml.kernel.behavioral.Error;
 import io.github.mosser.arduinoml.kernel.behavioral.State;
 import io.github.mosser.arduinoml.kernel.behavioral.Transition;
 import io.github.mosser.arduinoml.kernel.generator.ToWiring;
@@ -17,6 +18,7 @@ import io.github.mosser.arduinoml.kernel.structural.Sensor;
 public class GroovuinoMLModel {
 	private List<Brick> bricks;
 	private List<State> states;
+	private List<Error> errors;
 	private State initialState;
 	
 	private Binding binding;
@@ -24,6 +26,7 @@ public class GroovuinoMLModel {
 	public GroovuinoMLModel(Binding binding) {
 		this.bricks = new ArrayList<Brick>();
 		this.states = new ArrayList<State>();
+		this.errors = new ArrayList<>();
 		this.binding = binding;
 	}
 	
@@ -34,6 +37,24 @@ public class GroovuinoMLModel {
 		this.bricks.add(sensor);
 		this.binding.setVariable(name, sensor);
 //		System.out.println("> sensor " + name + " on pin " + pinNumber);
+	}
+
+	public void setLedError(){
+		Actuator errorLed = new Actuator();
+		errorLed.setName("errorLed");
+		errorLed.setPin(12);
+		this.bricks.add(errorLed);
+		this.binding.setVariable("errorLed", errorLed);
+	}
+
+	public void createError(Integer code, List<Action> actions, Sensor sensor, SIGNAL signal){
+		Error err = new Error();
+		err.setCode(code);
+		err.setActions(actions);
+		err.setSensor(sensor);
+		err.setValue(signal);
+		this.errors.add(err);
+
 	}
 	
 	public void createActuator(String name, Integer pinNumber) {
@@ -71,6 +92,7 @@ public class GroovuinoMLModel {
 		app.setBricks(this.bricks);
 		app.setStates(this.states);
 		app.setInitial(this.initialState);
+		app.setErrors(this.errors);
 		Visitor codeGenerator = new ToWiring();
 		app.accept(codeGenerator);
 		

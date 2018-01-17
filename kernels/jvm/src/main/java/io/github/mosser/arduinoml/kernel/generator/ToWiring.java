@@ -2,6 +2,7 @@ package io.github.mosser.arduinoml.kernel.generator;
 
 import io.github.mosser.arduinoml.kernel.App;
 import io.github.mosser.arduinoml.kernel.behavioral.*;
+import io.github.mosser.arduinoml.kernel.behavioral.Error;
 import io.github.mosser.arduinoml.kernel.structural.*;
 
 /**
@@ -19,8 +20,11 @@ public class ToWiring extends Visitor<StringBuffer> {
 		result.append(String.format("%s\n",s));
 	}
 
+	private App app;
+
 	@Override
 	public void visit(App app) {
+		this.app = app;
 		w("// Wiring code generated from an ArduinoML model");
 		w(String.format("// Application name: %s\n", app.getName()));
 
@@ -34,6 +38,11 @@ public class ToWiring extends Visitor<StringBuffer> {
 
 		for(State state: app.getStates()){
 			state.accept(this);
+		}
+		//w("je suis passer pâr la");
+		for(Error error : app.getErrors()){
+			//w("je suis passer pâr la");
+			error.accept(this);
 		}
 
 		if (app.getInitial() != null) {
@@ -55,10 +64,31 @@ public class ToWiring extends Visitor<StringBuffer> {
 	}
 
 	@Override
+	public void visit(Error error){
+		w(String.format("void state_error%s() {",error.getCode().toString()));
+
+		w(String.format("  if( digitalRead(%d) == %s && guard ) {",
+				error.getSensor().getPin(),error.getValue()));
+		w("    time = millis();");
+		for(Action action: error.getActions()) {
+			action.accept(this);
+		}
+		w("  } else {");
+		w(String.format("    state_%s();",((State) context.get(CURRENT_STATE)).getName()));
+		w("  }");
+
+		w("}\n");
+	}
+
+	@Override
 	public void visit(State state) {
 		w(String.format("void state_%s() {",state.getName()));
+		if(!app.getErrors().isEmpty()){
+			w(String.format("    state_error%s();",app.getErrors().get(0).getCode().toString()));
+		}
 		for(Action action: state.getActions()) {
-			action.accept(this);
+			//action.accept(this);
+			visit(action);
 		}
 
 		if (state.getTransition() != null) {
