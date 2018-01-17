@@ -67,12 +67,29 @@ public class ToWiring extends Visitor<StringBuffer> {
 	public void visit(Error error){
 		w(String.format("void state_error%s() {",error.getCode().toString()));
 
-		w(String.format("  if( digitalRead(%d) == %s && guard ) {",
-				error.getSensor().getPin(),error.getValue()));
+		w("  boolean guard = millis() - time > debounce;");
+		if(error.getSensors().size() == 1) {
+			w(String.format("  if( digitalRead(%d) == %s && guard ) {",
+					error.getSensors().get(0).getPin(), error.getValues().get(0)));
+		}
+		else{
+			w(String.format("  if( digitalRead("));
+			for(int i = 0; i < error.getSensors().size(); i++){
+				if(i == 0){
+					w(String.format("%d) == %s && ", error.getSensors().get(i).getPin(), error.getValues().get(i)));
+				}
+				else {
+					w(String.format("digitalRead(%d) == %s && ", error.getSensors().get(i).getPin(), error.getValues().get(i)));
+				}
+			}
+			w(String.format(" guard ) {"));
+		}
 		w("    time = millis();");
 		for(Action action: error.getActions()) {
 			action.accept(this);
 		}
+
+		w("}\n");
 
 		w("}\n");
 	}

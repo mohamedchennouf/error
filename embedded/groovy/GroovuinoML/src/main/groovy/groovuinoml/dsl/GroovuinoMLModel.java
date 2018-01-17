@@ -47,12 +47,12 @@ public class GroovuinoMLModel {
 		this.binding.setVariable("errorLed", errorLed);
 	}
 
-	public void createError(Integer code, List<Action> actions, Sensor sensor, SIGNAL signal){
+	public void createError(Integer code, List<Action> actions, List<Sensor> sensor, List<SIGNAL> signal){
 		Error err = new Error();
 		err.setCode(code);
 		err.setActions(actions);
-		err.setSensor(sensor);
-		err.setValue(signal);
+		err.setSensors(sensor);
+		err.setValues(signal);
 		this.errors.add(err);
 
 	}
@@ -84,7 +84,22 @@ public class GroovuinoMLModel {
 	public void setInitialState(State state) {
 		this.initialState = state;
 	}
-	
+
+	public Error getError(Integer code){
+		for(Error e : this.errors){
+			if(e.getCode() == code){
+				return e;
+			}
+		}
+		return null;
+	}
+	public void addError(Error e){
+		this.errors.add(e);
+	}
+
+	public void removeError(Error e){
+		this.errors.remove(e);
+	}
 	@SuppressWarnings("rawtypes")
 	public Object generateCode(String appName) {
 		App app = new App();

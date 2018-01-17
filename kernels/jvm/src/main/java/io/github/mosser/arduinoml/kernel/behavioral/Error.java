@@ -25,8 +25,8 @@ public class Error implements Visitable {
     }
 
     private List<Action> actions = new ArrayList<Action>();
-    private Sensor sensor;
-    private SIGNAL value;
+    private List<Sensor> sensors = new ArrayList<>();
+    private List<SIGNAL> values = new ArrayList<>();
 
     public List<Action> getActions() {
         return actions;
@@ -36,20 +36,28 @@ public class Error implements Visitable {
         this.actions = actions;
     }
 
-    public Sensor getSensor() {
-        return sensor;
+    public List<Sensor> getSensors() {
+        return sensors;
     }
 
-    public void setSensor(Sensor sensor) {
-        this.sensor = sensor;
+    public void setSensors(List<Sensor> sensors) {
+        this.sensors = sensors;
     }
 
-    public SIGNAL getValue() {
-        return value;
+    public void addSensor(Sensor sensor){
+        this.sensors.add(sensor);
     }
 
-    public void setValue(SIGNAL value) {
-        this.value = value;
+    public void addValue(SIGNAL sig){
+        this.values.add(sig);
+    }
+
+    public List<SIGNAL> getValues() {
+        return values;
+    }
+
+    public void setValues(List<SIGNAL> values) {
+        this.values = values;
     }
     @Override
     public void accept(Visitor visitor) {
