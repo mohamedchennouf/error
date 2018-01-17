@@ -73,9 +73,6 @@ public class ToWiring extends Visitor<StringBuffer> {
 		for(Action action: error.getActions()) {
 			action.accept(this);
 		}
-		w("  } else {");
-		w(String.format("    state_%s();",((State) context.get(CURRENT_STATE)).getName()));
-		w("  }");
 
 		w("}\n");
 	}
