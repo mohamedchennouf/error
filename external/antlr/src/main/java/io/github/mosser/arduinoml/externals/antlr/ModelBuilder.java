@@ -5,6 +5,7 @@ import io.github.mosser.arduinoml.externals.antlr.grammar.*;
 
 import io.github.mosser.arduinoml.kernel.App;
 import io.github.mosser.arduinoml.kernel.behavioral.Action;
+import io.github.mosser.arduinoml.kernel.behavioral.Error;
 import io.github.mosser.arduinoml.kernel.behavioral.State;
 import io.github.mosser.arduinoml.kernel.behavioral.Transition;
 import io.github.mosser.arduinoml.kernel.structural.Actuator;
@@ -35,6 +36,7 @@ public class ModelBuilder extends ArduinomlBaseListener {
     private Map<String, Sensor>   sensors   = new HashMap<>();
     private Map<String, Actuator> actuators = new HashMap<>();
     private Map<String, State>    states  = new HashMap<>();
+    private Map<String, Error>    errors  = new HashMap<>();
     private Map<String, Binding>  bindings  = new HashMap<>();
 
     private class Binding { // used to support state resolution for transitions
@@ -44,6 +46,7 @@ public class ModelBuilder extends ArduinomlBaseListener {
     }
 
     private State currentState = null;
+    private Error currentError = null;
 
     /**************************
      ** Listening mechanisms **
@@ -105,11 +108,32 @@ public class ModelBuilder extends ArduinomlBaseListener {
     }
 
     @Override
+    public void enterError(ArduinomlParser.ErrorContext ctx) {
+        Error error = new Error();
+//        Actuator errorLed = new Actuator();
+//        errorLed.setName("errorLed");
+//        errorLed.setPin(12);
+//        actuators.put(errorLed.getName(), errorLed);
+        error.setCode(Integer.valueOf(ctx.name.getText()));
+//        error.setActions(currentState.getActions());
+        this.currentError = error;
+        this.errors.put(error.getCode().toString(), error);
+    }
+
+    @Override
+    public void exitError(ArduinomlParser.ErrorContext ctx) {
+        this.theApp.getErrors().add(this.currentError);
+        this.currentError = null;
+    }
+
+    @Override
     public void enterAction(ArduinomlParser.ActionContext ctx) {
         Action action = new Action();
         action.setActuator(actuators.get(ctx.receiver.getText()));
         action.setValue(SIGNAL.valueOf(ctx.value.getText()));
-        currentState.getActions().add(action);
+//        currentError.getActions().add(action);
+//        currentState.getActions().add(action);
+
     }
 
     @Override
@@ -121,6 +145,14 @@ public class ModelBuilder extends ArduinomlBaseListener {
         toBeResolvedLater.value   = SIGNAL.valueOf(ctx.value.getText());
         bindings.put(currentState.getName(), toBeResolvedLater);
     }
+
+//    public void setLedError(){
+//        Actuator errorLed = new Actuator();
+//        errorLed.setName("errorLed");
+//        errorLed.setPin(12);
+//        this.bricks.add(errorLed);
+//        this.binding.setVariable("errorLed", errorLed);
+//    }
 
     @Override
     public void enterInitial(ArduinomlParser.InitialContext ctx) {

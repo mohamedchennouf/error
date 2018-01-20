@@ -15,7 +15,7 @@ public class App implements NamedElement, Visitable {
 	private List<Brick> bricks = new ArrayList<Brick>();
 	private List<State> states = new ArrayList<State>();
 	private State initial;
-	private List<Error> errors = new ArrayList<>();
+	private List<Error> errors = new ArrayList<Error>();
 
 	@Override
 	public String getName() {
